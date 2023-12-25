@@ -1,8 +1,8 @@
 # Notice
 
-this repo was forked from json-schema-editor-visual
-Fix `addFieldAction` methods when add sibling node
-I have also raised an issue to the Official team
+this repo was forked from json-schema-editor-visual.
+Fix `addFieldAction` & `addChildFieldAction` methods when add sibling node or add child node
+I have also raised an issue to the Official team.
 
 # json-schema-editor-visual
 

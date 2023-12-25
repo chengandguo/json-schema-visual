@@ -194,7 +194,7 @@ export default {
     let newPropertiesData = {};
 
     newPropertiesData = Object.assign({}, propertiesData);
-    let ranName = "field_" + fieldNum++;
+    let ranName = this.getRandomName(newPropertiesData);
     newPropertiesData[ranName] = utils.defaultSchema.string;
     utils.setData(state.data, keys, newPropertiesData);
 

@@ -1,6 +1,6 @@
 {
   "name": "json-schema-visual",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "jsonschema editor",
   "main": "package/index.js",
   "license": "MIC",
@@ -42,6 +42,6 @@
     "ykit-config-antd": "^2"
   },
   "publishConfig": {
-    "registry": "https://www.npmjs.com/"
+    "registry": "https://registry.npmjs.org/"
   }
 }
