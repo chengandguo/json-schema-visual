@@ -1,55 +1,62 @@
-const JSONPATH_JOIN_CHAR = '.';
-exports.JSONPATH_JOIN_CHAR = JSONPATH_JOIN_CHAR;
-exports.lang = 'en_US';
-exports.format = [
-  { name: 'date-time' },
-  { name: 'date' },
-  { name: 'email' },
-  { name: 'hostname' },
-  { name: 'ipv4' },
-  { name: 'ipv6' },
-  { name: 'uri' }
+import _ from "underscore";
+
+export const JSONPATH_JOIN_CHAR = ".";
+export const lang = "en_US";
+export const format = [
+  { name: "date-time" },
+  { name: "date" },
+  { name: "email" },
+  { name: "hostname" },
+  { name: "ipv4" },
+  { name: "ipv6" },
+  { name: "uri" },
 ];
-const _ = require('underscore');
-exports.SCHEMA_TYPE = ['string', 'number', 'array', 'object', 'boolean', 'integer'];
-exports.defaultSchema = {
+export const SCHEMA_TYPE = [
+  "string",
+  "number",
+  "array",
+  "object",
+  "boolean",
+  "integer",
+];
+export const defaultSchema = {
   string: {
-    type: 'string'
+    type: "string",
   },
   number: {
-    type: 'number'
+    type: "number",
   },
   array: {
-    type: 'array',
+    type: "array",
     items: {
-      type: 'string'
-    }
+      type: "string",
+    },
   },
   object: {
-    type: 'object',
-    properties: {}
+    type: "object",
+    properties: {},
   },
   boolean: {
-    type: 'boolean'
+    type: "boolean",
   },
   integer: {
-    type: 'integer'
-  }
+    type: "integer",
+  },
 };
 
 // 防抖函数，减少高频触发的函数执行的频率
 // 请在 constructor 里使用:
 
 // this.func = debounce(this.func, 400);
-exports.debounce = (func, wait) => {
+export const debounce = (func, wait) => {
   let timeout;
-  return function() {
+  return function () {
     clearTimeout(timeout);
     timeout = setTimeout(func, wait);
   };
 };
 
-function getData(state, keys) {
+export function getData(state, keys) {
   let curState = state;
   for (let i = 0; i < keys.length; i++) {
     curState = curState[keys[i]];
@@ -57,9 +64,7 @@ function getData(state, keys) {
   return curState;
 }
 
-exports.getData = getData;
-
-exports.setData = function(state, keys, value) {
+export const setData = function (state, keys, value) {
   let curState = state;
   for (let i = 0; i < keys.length - 1; i++) {
     curState = curState[keys[i]];
@@ -67,7 +72,7 @@ exports.setData = function(state, keys, value) {
   curState[keys[keys.length - 1]] = value;
 };
 
-exports.deleteData = function(state, keys) {
+export const deleteData = function (state, keys) {
   let curState = state;
   for (let i = 0; i < keys.length - 1; i++) {
     curState = curState[keys[i]];
@@ -76,16 +81,16 @@ exports.deleteData = function(state, keys) {
   delete curState[keys[keys.length - 1]];
 };
 
-exports.getParentKeys = function(keys) {
+export const getParentKeys = function (keys) {
   if (keys.length === 1) return [];
   let arr = [].concat(keys);
   arr.splice(keys.length - 1, 1);
   return arr;
 };
 
-exports.clearSomeFields = function(keys, data) {
+export const clearSomeFields = function (keys, data) {
   const newData = Object.assign({}, data);
-  keys.forEach(key => {
+  keys.forEach((key) => {
     delete newData[key];
   });
   return newData;
@@ -93,16 +98,16 @@ exports.clearSomeFields = function(keys, data) {
 
 function getFieldstitle(data) {
   const requiredtitle = [];
-  Object.keys(data).map(title => {
+  Object.keys(data).map((title) => {
     requiredtitle.push(title);
   });
 
   return requiredtitle;
 }
 
-function handleSchemaRequired(schema, checked) {
+export function handleSchemaRequired(schema, checked) {
   // console.log(schema)
-  if (schema.type === 'object') {
+  if (schema.type === "object") {
     let requiredtitle = getFieldstitle(schema.properties);
 
     // schema.required = checked ? [].concat(requiredtitle) : [];
@@ -113,7 +118,7 @@ function handleSchemaRequired(schema, checked) {
     }
 
     handleObject(schema.properties, checked);
-  } else if (schema.type === 'array') {
+  } else if (schema.type === "array") {
     handleSchemaRequired(schema.items, checked);
   } else {
     return schema;
@@ -122,18 +127,16 @@ function handleSchemaRequired(schema, checked) {
 
 function handleObject(properties, checked) {
   for (var key in properties) {
-    if (properties[key].type === 'array' || properties[key].type === 'object')
+    if (properties[key].type === "array" || properties[key].type === "object")
       handleSchemaRequired(properties[key], checked);
   }
 }
 
-exports.handleSchemaRequired = handleSchemaRequired;
-
-function cloneObject(obj) {
-  if (typeof obj === 'object') {
+export function cloneObject(obj) {
+  if (typeof obj === "object") {
     if (Array.isArray(obj)) {
       var newArr = [];
-      obj.forEach(function(item, index) {
+      obj.forEach(function (item, index) {
         newArr[index] = cloneObject(item);
       });
       return newArr;
@@ -149,4 +152,78 @@ function cloneObject(obj) {
   }
 }
 
-exports.cloneObject = cloneObject;
+export const validateJsonFormat = (formData, path = "root", line = 0) => {
+  const errors = [];
+  const type = getDataType(formData);
+
+  if (type === "undefined") {
+    errors.push({
+      type,
+      value: formData,
+      error: "无法识别的数据类型",
+      path,
+      line,
+    });
+  }
+
+  if (type === "null") {
+    errors.push({
+      type,
+      value: formData,
+      error: "无法识别null对应的具体数据类型",
+      path,
+      line,
+    });
+  }
+
+  if (type === "object") {
+    line++;
+    for (const [key, value] of Object.entries(formData)) {
+      const result = validateJsonFormat(value, `${path}.${key}`, line);
+      errors.push(...result);
+      line = result.line;
+      line++;
+    }
+  }
+
+  if (type === "array") {
+    line++;
+    for (const [index, value] of formData.entries()) {
+      const result = validateJsonFormat(value, `${path}[${index}]`, line);
+      errors.push(...result);
+      line = result.line;
+      line++;
+    }
+  }
+
+  errors.line = line;
+  return errors;
+};
+
+export const getDataType = (data) => {
+  if (typeof data === "boolean") {
+    return "boolean";
+  }
+
+  if (typeof data === "string") {
+    return "string";
+  }
+
+  if (typeof data === "number") {
+    return "number";
+  }
+
+  if (Array.isArray(data)) {
+    return "array";
+  }
+
+  if (data === null) {
+    return "null";
+  }
+
+  if (typeof data === "object") {
+    return "object";
+  }
+
+  return "undefined";
+};

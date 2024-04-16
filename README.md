@@ -4,6 +4,8 @@ this repo was forked from json-schema-editor-visual.
 Fix `addFieldAction` & `addChildFieldAction` methods when add sibling node or add child node
 I have also raised an issue to the Official team.
 
+update: ref to changelog to see more details
+
 # json-schema-editor-visual
 
 A json-schema editor of high efficient and easy-to-use, base on React.

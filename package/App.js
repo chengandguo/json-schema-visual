@@ -4,13 +4,13 @@ import {
   Row,
   Tooltip,
   Col,
-  Form,
   Select,
   Checkbox,
   Button,
   Modal,
   message,
   Tabs,
+  Table,
 } from "antd";
 import {
   QuestionCircleOutlined,
@@ -25,18 +25,18 @@ const { TextArea } = Input;
 const TabPane = Tabs.TabPane;
 
 import "./index.css";
-import AceEditor from "./components/AceEditor/AceEditor.js";
+import AceEditor from "./components/AceEditor/AceEditor";
 import _ from "underscore";
 import { connect } from "react-redux";
-import SchemaJson from "./components/SchemaComponents/SchemaJson.js";
+import SchemaJson from "./components/SchemaComponents/SchemaJson";
 import PropTypes from "prop-types";
-import { SCHEMA_TYPE, debounce } from "./utils.js";
+import { SCHEMA_TYPE, debounce, validateJsonFormat } from "./utils.js";
 import handleSchema from "./schema";
-const GenerateSchema = require("generate-schema/src/schemas/json.js");
-const utils = require("./utils");
-import CustomItem from "./components/SchemaComponents/SchemaOther.js";
+import GenerateSchema from "generate-schema/src/schemas/json.js";
+import * as utils from "./utils";
+import CustomItem from "./components/SchemaComponents/SchemaOther";
 import LocalProvider from "./components/LocalProvider/index.js";
-import MockSelect from "./components/MockSelect/index.js";
+import MockSelect from "./components/MockSelect/index";
 
 class jsonSchema extends React.Component {
   constructor(props) {
@@ -66,12 +66,17 @@ class jsonSchema extends React.Component {
       visible: true,
     });
   };
+
   handleOk = () => {
     if (this.importJsonType !== "schema") {
       if (!this.jsonData) {
         return message.error("json 数据格式有误");
       }
-
+      const errors = validateJsonFormat(this.jsonData);
+      if (errors.length) {
+        this.showJsonSchemaError(errors);
+        return;
+      }
       let jsonData = GenerateSchema(this.jsonData);
       this.Model.changeEditorSchemaAction({ value: jsonData });
     } else {
@@ -82,6 +87,52 @@ class jsonSchema extends React.Component {
     }
     this.setState({ visible: false });
   };
+
+  showJsonSchemaError = (errors) => {
+    Modal.confirm({
+      content: this.renderJsonSchemaError(errors),
+      icon: null,
+      width: 640,
+      cancelButtonProps: { style: { display: "none" } },
+      okText: "确认",
+    });
+  };
+
+  renderJsonSchemaError = (errors) => {
+    const columns = [
+      {
+        dataIndex: "path",
+        key: "path",
+        title: "字段路径",
+        width: 200,
+      },
+      {
+        dataIndex: "value",
+        key: "value",
+        title: "字段值",
+        width: 100,
+        render: (value) => {
+          return JSON.stringify(value);
+        },
+      },
+      {
+        dataIndex: "error",
+        key: "error",
+        width: 400,
+        title: "错误类型",
+      },
+    ];
+
+    return (
+      <div className="json-schema-error-modal">
+        <div className="json-schema-error-title">
+          JSON转Schema失败，请检查以下字段
+        </div>
+        <Table dataSource={errors} columns={columns} pagination={false} />
+      </div>
+    );
+  };
+
   handleCancel = () => {
     this.setState({ visible: false });
   };
@@ -240,11 +291,13 @@ class jsonSchema extends React.Component {
       advVisible: false,
     });
   };
+
   handleAdvCancel = () => {
     this.setState({
       advVisible: false,
     });
   };
+
   showAdv = (key, value) => {
     this.setState({
       advVisible: true,
@@ -266,15 +319,8 @@ class jsonSchema extends React.Component {
   };
 
   render() {
-    const {
-      visible,
-      editVisible,
-      description,
-      advVisible,
-      type,
-      checked,
-      editorModalName,
-    } = this.state;
+    const { visible, editVisible, advVisible, checked, editorModalName } =
+      this.state;
     const { schema } = this.props;
 
     let disabled =
